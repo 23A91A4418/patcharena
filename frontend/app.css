@@ -1,0 +1,69 @@
+/* PatchArena — Extra styles beyond Tailwind */
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* Terminal log */
+.log-terminal {
+  background: #080a10;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  height: 240px;
+  overflow-y: auto;
+  color: #9ca3af;
+}
+
+.log-terminal .log-line { margin: 0; padding: 0; }
+.log-terminal .log-line.error { color: #f87171; }
+.log-terminal .log-line.pass  { color: #34d399; }
+.log-terminal .log-line.warn  { color: #fbbf24; }
+
+/* Status chips */
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.chip-queued    { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.chip-running   { background: rgba(251,191,36,0.15); color: #fbbf24; animation: pulse 1.5s infinite; }
+.chip-passed    { background: rgba(52,211,153,0.15); color: #34d399; }
+.chip-failed    { background: rgba(248,113,113,0.15); color: #f87171; }
+.chip-timeout   { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.chip-error     { background: rgba(239,68,68,0.15);  color: #ef4444; }
+
+/* Score bar */
+.score-bar-bg { background: rgba(255,255,255,0.05); border-radius: 4px; height: 6px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #7c3aed, #4f46e5); transition: width 0.8s ease; }
+
+/* Candidate card */
+.candidate-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 16px;
+  transition: border-color 0.3s;
+}
+.candidate-card.winner { border-color: rgba(52,211,153,0.4); box-shadow: 0 0 40px rgba(52,211,153,0.05); }
+.candidate-card.failed { border-color: rgba(248,113,113,0.2); opacity: 0.7; }
+
+/* Diff syntax highlight */
+.diff-add { color: #34d399; }
+.diff-del { color: #f87171; }
+.diff-hunk { color: #60a5fa; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+/* Celesto badge */
+.celesto-badge {
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(79,70,229,0.1));
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a5b4fc;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}

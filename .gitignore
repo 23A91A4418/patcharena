@@ -1,0 +1,15 @@
+.env
+runs/*
+!runs/golden
+!runs/golden/**
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+dist/
+*.egg-info/
+.venv/
+venv/
+node_modules/
+*.log
+screenshot*.png
