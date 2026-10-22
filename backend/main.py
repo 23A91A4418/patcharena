@@ -69,25 +69,49 @@ async def get_run(run_id: str):
     return run.model_dump()
 
 
-@app.get("/api/runs/{run_id}/events")
-async def run_events(run_id: str):
-    """SSE endpoint: replay history then stream live events."""
+@app.get("/api/replay/{run_id}/events")
+async def replay_events(run_id: str, speed: float = 5.0):
+    """Stream a saved run's events directly to the SSE client."""
+
     async def generator():
-        q = await events.subscribe(run_id)
+        queue = asyncio.Queue()
+
+        async def capture(event_run_id, strategy_id, event_type, data):
+            await queue.put({
+                "data": json.dumps({
+                    "run_id": event_run_id,
+                    "strategy_id": strategy_id,
+                    "type": event_type,
+                    "data": data,
+                })
+            })
+
+        async def produce():
+            try:
+                await replay.stream_replay(run_id, capture, speed=speed)
+            except FileNotFoundError:
+                await queue.put({
+                    "data": json.dumps({
+                        "type": "error",
+                        "data": f"No saved run found: {run_id}",
+                    })
+                })
+            finally:
+                await queue.put(None)
+
+        producer = asyncio.create_task(produce())
         try:
             while True:
-                try:
-                    event = await asyncio.wait_for(q.get(), timeout=30)
-                    yield {"data": json.dumps(event)}
-                except asyncio.TimeoutError:
-                    yield {"data": json.dumps({"type": "ping"})}
-        except asyncio.CancelledError:
-            pass
+                event = await queue.get()
+                if event is None:
+                    break
+                yield event
         finally:
-            events.unsubscribe(run_id, q)
+            if not producer.done():
+                producer.cancel()
+            await asyncio.gather(producer, return_exceptions=True)
 
     return EventSourceResponse(generator())
-
 
 @app.post("/api/runs/{run_id}/pr")
 async def open_pr_endpoint(run_id: str):
