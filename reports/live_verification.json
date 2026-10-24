@@ -1,0 +1,20 @@
+{
+  "test_type": "manual_live_cloud_verification",
+  "verified_on": "2026-10-24",
+  "computer_id": "cmp_4d520c0488eb",
+  "computer_name": "planck",
+  "image": "ubuntu-24.04",
+  "checks": {
+    "cloud_creation": "passed",
+    "command_execution": "passed",
+    "outbound_https": "reachable; example.com returned HTTP 200",
+    "cleanup": "passed; Celesto reported status deleted",
+    "strict_network_containment": "not verified",
+    "host_filesystem_isolation": "not verified"
+  },
+  "limitations": [
+    "One disposable cloud computer was tested.",
+    "This test does not reproduce the reported 20-run evaluation.",
+    "This test does not establish cleanup behavior under every failure mode."
+  ]
+}

@@ -41,3 +41,33 @@
 {"ts": "2026-10-24T08:27:00.929392+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
 {"ts": "2026-10-24T08:27:00.965215+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
 {"ts": "2026-10-24T08:27:00.994929+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
+{"ts": "2026-10-24T09:23:15.381271+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:23:15.386178+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:23:15.405912+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:23:15.428034+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:23:15.453326+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cleanup", "result": "deleted"}
+{"ts": "2026-10-24T09:23:15.477315+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:23:15.492829+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:23:15.510986+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:23:15.529782+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:23:15.551772+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
+{"ts": "2026-10-24T09:43:54.830696+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:43:54.836898+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:43:54.863046+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:43:54.887568+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:43:54.910804+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cleanup", "result": "deleted"}
+{"ts": "2026-10-24T09:43:54.944347+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:43:54.958283+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:43:54.979611+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:43:55.000944+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:43:55.022034+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
+{"ts": "2026-10-24T09:45:53.155532+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:45:53.166922+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:45:53.193234+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:45:53.221851+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:45:53.243816+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cleanup", "result": "deleted"}
+{"ts": "2026-10-24T09:45:53.271433+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:45:53.284685+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:45:53.304459+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:45:53.328292+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:45:53.360007+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
