@@ -16,10 +16,14 @@ let winnerData = null;
 document.addEventListener("DOMContentLoaded", async () => {
   await loadStrategies();
 
-  document.getElementById("replayToggle").addEventListener("change", (e) => {
-    const replayBtn = document.getElementById("replayBtn");
-    replayBtn.classList.toggle("hidden", !e.target.checked);
-  });
+  const replayToggle = document.getElementById("replayToggle");
+  const replayBtn = document.getElementById("replayBtn");
+
+  replayToggle.onchange = function () {
+    replayBtn.style.display = this.checked ? "inline-flex" : "none";
+  };
+
+  replayBtn.style.display = replayToggle.checked ? "inline-flex" : "none";
 });
 
 async function loadStrategies() {
@@ -297,7 +301,12 @@ async function showLeaderboard(data) {
   // Fetch full run state
   let runState = null;
   try {
-    const resp = await fetch(`/api/runs/${currentRunId}`);
+    const replayMode = currentRunId === "golden";
+    const stateUrl = replayMode
+      ? `/api/replay/${currentRunId}/state`
+      : `/api/runs/${currentRunId}`;
+    const resp = await fetch(stateUrl);
+    if (!resp.ok) throw new Error(`Could not load run state (${resp.status})`);
     runState = await resp.json();
   } catch {}
 

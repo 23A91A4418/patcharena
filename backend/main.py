@@ -32,6 +32,16 @@ app.add_middleware(
 # Serve frontend assets directly from the frontend directory.
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
+@app.get("/app.js")
+async def frontend_javascript():
+    return FileResponse("frontend/app.js", media_type="application/javascript")
+
+
+@app.get("/app.css")
+async def frontend_stylesheet():
+    return FileResponse("frontend/app.css", media_type="text/css")
+
+
 # In-memory registry of active runs.
 _active_runs: dict[str, RunState] = {}
 
