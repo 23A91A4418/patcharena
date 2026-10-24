@@ -1,9 +1,8 @@
 """Unit tests for judge.py — 5+ cases covering gates and scoring."""
 
 from __future__ import annotations
-
+from datetime import datetime, timedelta, timezone
 import pytest
-from datetime import datetime, timedelta
 
 from backend.models import CandidateResult, CandidateStatus
 
@@ -20,7 +19,7 @@ def make_candidate(
     no_regression: bool = True,
     regression_test_passed: bool = False,
 ) -> CandidateResult:
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     return CandidateResult(
         strategy_id=strategy_id,
         status=CandidateStatus.PASSED if final_passed else CandidateStatus.FAILED,

@@ -1,20 +1,23 @@
+
 """FastAPI application: REST routes + SSE event stream."""
 
 from __future__ import annotations
 
 import asyncio
 import json
+import os
+import uuid
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sse_starlette.sse import EventSourceResponse
 
-from . import events, orchestrator, replay
+from . import events, ledger, orchestrator, replay
 from .config import REPLAY_MODE
-from .github_client import open_pr, push_branch_from_sandbox
-from .models import PRRequest, RunRequest, RunState
+from .github_client import open_pr
+from .models import LedgerRunRequest, PRRequest, RunRequest, RunState
 from .strategies import list_strategies
 
 app = FastAPI(title="PatchArena API", version="0.1.0")
@@ -26,10 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend
+# Serve frontend assets directly from the frontend directory.
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
-# In-memory registry of active runs
+# In-memory registry of active runs.
 _active_runs: dict[str, RunState] = {}
 
 
@@ -38,17 +41,74 @@ async def root():
     return FileResponse("frontend/index.html")
 
 
+@app.get("/health")
+async def health():
+    """Liveness probe required by the challenge spec."""
+    return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Ledger endpoints (compliance: GET /api/runs, POST /api/runs)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/runs")
+async def list_runs_ledger():
+    """Return all rows from the run ledger (Postgres)."""
+    try:
+        rows = await ledger.list_runs()
+        # Convert datetime objects to ISO strings for JSON serialisation.
+        result = []
+        for row in rows:
+            r = dict(row)
+            for k, v in r.items():
+                if hasattr(v, "isoformat"):
+                    r[k] = v.isoformat()
+            result.append(r)
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Ledger unavailable: {exc}") from exc
+
+
+@app.post("/api/runs", status_code=201)
+async def create_run_ledger(req: LedgerRunRequest):
+    """Insert a sandbox run row into the ledger. Returns 201 or 400."""
+    try:
+        row = await ledger.insert_run(
+            run_id=req.run_id,
+            sandbox_name=req.sandbox_name,
+            problem_id=req.problem_id,
+            state=req.state,
+            execution_target=req.execution_target,
+        )
+        r = dict(row)
+        for k, v in r.items():
+            if hasattr(v, "isoformat"):
+                r[k] = v.isoformat()
+        return JSONResponse(status_code=201, content=r)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Ledger unavailable: {exc}") from exc
+
+
+# ---------------------------------------------------------------------------
+# Arena run endpoints (renamed from /api/runs to /api/arena/runs)
+# ---------------------------------------------------------------------------
+
+
 @app.get("/api/strategies")
 async def get_strategies():
     return [s.model_dump() for s in list_strategies()]
 
 
-@app.post("/api/runs")
-async def start_run(req: RunRequest):
+@app.post("/api/arena/runs")
+async def start_arena_run(req: RunRequest):
     if REPLAY_MODE:
-        raise HTTPException(400, "Server is in REPLAY_MODE. Use /api/replay/<id>.")
+        raise HTTPException(
+            status_code=400,
+            detail="Server is in REPLAY_MODE. Use /api/replay/{id}.",
+        )
 
-    import uuid
     run_id = str(uuid.uuid4())[:8]
 
     async def _run_and_store():
@@ -69,9 +129,39 @@ async def get_run(run_id: str):
     return run.model_dump()
 
 
+@app.get("/api/replay/list")
+async def list_replays():
+    return replay.list_saved_runs()
+
+
+@app.get("/api/replay/{run_id}/state")
+async def replay_state(run_id: str):
+    """Return the saved state for a replay run."""
+    folder = "golden" if run_id == "golden" else run_id
+    path = os.path.join("runs", folder, "state.json")
+
+    if not os.path.isfile(path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Saved replay state not found: {run_id}",
+        )
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Could not read saved replay state",
+        ) from exc
+
+
 @app.get("/api/replay/{run_id}/events")
 async def replay_events(run_id: str, speed: float = 5.0):
     """Stream a saved run's events directly to the SSE client."""
+
+    if speed <= 0:
+        raise HTTPException(status_code=400, detail="Speed must be greater than 0")
 
     async def generator():
         queue = asyncio.Queue()
@@ -92,6 +182,8 @@ async def replay_events(run_id: str, speed: float = 5.0):
             except FileNotFoundError:
                 await queue.put({
                     "data": json.dumps({
+                        "run_id": run_id,
+                        "strategy_id": "",
                         "type": "error",
                         "data": f"No saved run found: {run_id}",
                     })
@@ -112,6 +204,7 @@ async def replay_events(run_id: str, speed: float = 5.0):
             await asyncio.gather(producer, return_exceptions=True)
 
     return EventSourceResponse(generator())
+
 
 @app.post("/api/runs/{run_id}/pr")
 async def open_pr_endpoint(run_id: str):
@@ -142,31 +235,20 @@ async def open_pr_endpoint(run_id: str):
     return {"pr_url": pr_url}
 
 
-@app.get("/api/replay/{run_id}/events")
-async def replay_events(run_id: str, speed: float = 5.0):
-    """Stream a saved run's events at compressed timing."""
-    async def generator():
-        try:
-            await replay.stream_replay(run_id, events.emit, speed=speed)
-        except FileNotFoundError:
-            yield {"data": json.dumps({"type": "error", "data": "No saved run found"})}
-
-    return EventSourceResponse(generator())
-
-
-@app.get("/api/replay/list")
-async def list_replays():
-    return replay.list_saved_runs()
-
-
 def _build_leaderboard(run: RunState) -> str:
-    from .strategies import get_strategy
-    rows = ["| Strategy | Score | Status | Lines | Preview |",
-            "| --- | --- | --- | --- | --- |"]
+    rows = [
+        "| Strategy | Score | Status | Lines | Preview |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+
     for sid in run.ranking:
-        c = run.candidates.get(sid)
-        if c:
-            status = "✅" if not c.gate_failures else "❌"
-            preview = f"[link]({c.preview_url})" if c.preview_url else "—"
-            rows.append(f"| {sid} | {c.score:.1f} | {status} | {c.lines_changed} | {preview} |")
+        candidate = run.candidates.get(sid)
+        if candidate:
+            status = "✅" if not candidate.gate_failures else "❌"
+            preview = f"[link]({candidate.preview_url})" if candidate.preview_url else "—"
+            rows.append(
+                f"| {sid} | {candidate.score:.1f} | {status} | "
+                f"{candidate.lines_changed} | {preview} |"
+            )
+
     return "\n".join(rows)

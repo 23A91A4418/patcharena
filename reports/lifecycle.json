@@ -1,0 +1,33 @@
+{
+    "cleanup_on_success": true,
+    "cleanup_on_failure": true,
+    "cleanup_on_interrupt": true,
+    "sandbox_names": [
+        "sbx-eval000001",
+        "sbx-eval000002",
+        "sbx-eval000003",
+        "sbx-eval000004",
+        "sbx-eval000005",
+        "sbx-eval000006",
+        "sbx-eval000007",
+        "sbx-eval000008",
+        "sbx-eval000009",
+        "sbx-eval000010",
+        "sbx-eval000011",
+        "sbx-eval000012",
+        "sbx-eval000013",
+        "sbx-eval000014",
+        "sbx-eval000015",
+        "sbx-eval000016",
+        "sbx-eval000017",
+        "sbx-eval000018",
+        "sbx-eval000019",
+        "sbx-eval000020",
+        "sbx-containtest01",
+        "sbx-concurrent01",
+        "sbx-concurrent02",
+        "sbx-concurrent03",
+        "sbx-concurrent04",
+        "sbx-concurrent05"
+    ]
+}

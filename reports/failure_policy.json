@@ -1,0 +1,7 @@
+{
+    "failed_step": 7,
+    "total_steps": 10,
+    "policy": "fresh",
+    "rationale": "PatchArena uses the 'fresh' recovery policy when step 7 (diff collection and safety scan) fails. The sandbox is always deleted in the finally block regardless of how the pipeline exited. Because git operations at step 7 are trusted application commands, a failure here (e.g. git diff timeout or filesystem error) does not imply corrupted agent state that needs snapshot restoration. The cost of discarding the sandbox is low: the candidate is already marked FAILED before step 7 errors are caught, and no further work can be done usefully. A rollback to a pre-patch snapshot would require Celesto snapshot support verified against the installed CLI version, which was not tested in this implementation. The fresh policy is simpler, always correct, and fully implemented: the finally block calls sandbox.delete() under asyncio.shield to survive CancelledError, and the result is recorded in the failure trace. The limitation versus rollback is that any intermediate work product is lost — acceptable here because a failed candidate is not promoted to winner in any case.",
+    "trace_path": "reports/failure_trace.jsonl"
+}

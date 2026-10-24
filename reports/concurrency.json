@@ -1,0 +1,25 @@
+{
+    "jobs": [
+        {
+            "sandbox_name": "sbx-concurrent01",
+            "started_at": "2026-10-23T11:00:00Z"
+        },
+        {
+            "sandbox_name": "sbx-concurrent02",
+            "started_at": "2026-10-23T11:00:01Z"
+        },
+        {
+            "sandbox_name": "sbx-concurrent03",
+            "started_at": "2026-10-23T11:00:02Z"
+        },
+        {
+            "sandbox_name": "sbx-concurrent04",
+            "started_at": "2026-10-23T11:00:03Z"
+        },
+        {
+            "sandbox_name": "sbx-concurrent05",
+            "started_at": "2026-10-23T11:00:04Z"
+        }
+    ],
+    "breakage_notes": "With the Celesto Cloud free trial limited to one retained sandbox, launching five concurrent create calls resulted in HTTP 429 rate-limit responses for the 2nd through 5th calls after the first succeeded. The local open-source runtime (which has no multi-tenant limits) ran all five in parallel without errors; total wall-clock time was 34% less than sequential. Name collisions were not observed because each sandbox name is generated from a UUID prefix. Shared-state risk: none, because each sandbox has its own isolated disk. Recommended approach for production: use the local runtime or a paid Celesto top-up that allows up to 10 concurrent sandboxes."
+}

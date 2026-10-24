@@ -1,3 +1,4 @@
+
 """Celesto Cloud sandbox wrapper for PatchArena."""
 
 from __future__ import annotations
@@ -12,10 +13,15 @@ from dataclasses import dataclass, field
 
 from .config import CELESTO_API_KEY, SANDBOX_PREFIX, redact
 from .models import ExecResult
+from .safety import validate_command
 
 DEFAULT_CMD_TIMEOUT = 120
 DEFAULT_RETRIES = 1
 PUBLISH_TIMEOUT = 30
+
+
+class CommandBlockedError(RuntimeError):
+    """Raised when a command is blocked by the pre-execution safety hook."""
 
 
 @dataclass
@@ -35,8 +41,7 @@ class Sandbox:
         template: str = "coding-agent",
         disk_mb: int = 10240,
     ) -> "Sandbox":
-        # Celesto 0.1.7 cloud creation rejects local computer options
-        # such as --name, --os, and --disk-size.
+        # Celesto Cloud manages its own computer configuration.
         sb = cls(
             name=name,
             run_id=run_id,
@@ -45,22 +50,23 @@ class Sandbox:
         )
 
         args = ["computer", "create", "--cloud"]
+
         if template and template != "coding-agent":
             await sb._log(
-                f"Note: Celesto Cloud manages its computer configuration; "
+                f"Note: Celesto Cloud manages its configuration; "
                 f"template '{template}' is not applied."
             )
 
         stdout, stderr, rc = await sb._celesto(args, timeout=150)
+
         if rc != 0:
             raise RuntimeError(
                 "Celesto cloud computer creation failed: "
                 f"{(stderr or stdout)[:500]}"
             )
 
-        # Cloud creation may choose its own computer ID. Do not assume
-        # the requested name is the actual ID until the CLI confirms it.
         created_id = _extract_computer_id(stdout)
+
         if created_id:
             sb.name = created_id
         else:
@@ -77,7 +83,37 @@ class Sandbox:
         cmd: str,
         timeout: int = DEFAULT_CMD_TIMEOUT,
         env: dict[str, str] | None = None,
+        trusted: bool = False,
     ) -> ExecResult:
+        """
+        Execute a shell command inside the sandbox.
+
+        Parameters
+        ----------
+        cmd:     Shell command to run.
+        timeout: Seconds to wait for the command to complete.
+        env:     Extra environment variables to inject (values are not logged).
+        trusted: If True, skip safety-pattern checks. Only set this for
+                 application-owned commands (git, pip, pytest, etc.), never
+                 for text that originates from the LLM or user input.
+
+        Raises
+        ------
+        CommandBlockedError: if the safety hook blocks the command.
+        """
+        decision = validate_command(
+            cmd,
+            sandbox_name=self.name,
+            run_id=self.run_id,
+            candidate_id=self.strategy_id,
+            trusted=trusted,
+        )
+        if not decision.allowed:
+            raise CommandBlockedError(
+                f"Command blocked by safety hook: {decision.reason}\n"
+                f"Command summary (first 200 chars): {cmd[:200]}"
+            )
+
         started = time.monotonic()
         shell_cmd = cmd
 
@@ -105,6 +141,7 @@ class Sandbox:
         )
 
         duration = time.monotonic() - started
+
         result = ExecResult(
             stdout=_truncate_lines(stdout, 200),
             stderr=_truncate_lines(stderr, 80),
@@ -118,13 +155,17 @@ class Sandbox:
         return result
 
     async def write_file(self, path: str, content: str) -> None:
-        encoded = base64.b64encode(content.encode("utf-8")).decode("ascii")
+        encoded = base64.b64encode(
+            content.encode("utf-8")
+        ).decode("ascii")
+
         result = await self.run(
             f"mkdir -p -- {shlex.quote(os.path.dirname(path) or '.')}"
             f" && printf '%s' {shlex.quote(encoded)}"
             f" | base64 -d > {shlex.quote(path)}",
             timeout=30,
         )
+
         if result.exit_code != 0:
             raise RuntimeError(
                 f"write_file failed: path={path}; {result.stderr[:200]}"
@@ -135,10 +176,12 @@ class Sandbox:
             f"cat -- {shlex.quote(path)}",
             timeout=30,
         )
+
         if result.exit_code != 0:
             raise FileNotFoundError(
                 f"read_file failed: path={path}; {result.stderr[:200]}"
             )
+
         return result.stdout
 
     async def publish_port(self, port: int) -> str:
@@ -153,6 +196,7 @@ class Sandbox:
             ],
             timeout=PUBLISH_TIMEOUT,
         )
+
         if rc != 0:
             raise RuntimeError(
                 f"Port publishing failed: {(stderr or stdout)[:300]}"
@@ -162,6 +206,7 @@ class Sandbox:
             for part in line.split():
                 if part.startswith(("http://", "https://")):
                     return part.rstrip(".,)")
+
         raise RuntimeError(f"No preview URL found: {stdout[:300]}")
 
     async def stop(self) -> None:
@@ -169,8 +214,10 @@ class Sandbox:
             ["computer", "stop", "--cloud", self.name],
             timeout=60,
         )
+
         if rc != 0:
             raise RuntimeError(f"Stop failed: {(stderr or stdout)[:300]}")
+
         await self._log(f"Sandbox {self.name} stopped")
 
     async def start(self) -> None:
@@ -178,22 +225,32 @@ class Sandbox:
             ["computer", "start", "--cloud", self.name],
             timeout=90,
         )
+
         if rc != 0:
             raise RuntimeError(f"Start failed: {(stderr or stdout)[:300]}")
+
         await asyncio.sleep(3)
         await self._log(f"Sandbox {self.name} started")
 
     async def delete(self) -> None:
+        """Delete this cloud sandbox; raise if deletion fails."""
         stdout, stderr, rc = await self._celesto(
             ["computer", "delete", "--cloud", "--yes", self.name],
             timeout=60,
         )
+
         if rc != 0:
+            message = (stderr or stdout or "Unknown Celesto error")[:300]
+
             await self._log(
-                f"Warning: delete failed: {(stderr or stdout)[:200]}"
+                f"ERROR: failed to delete sandbox {self.name}: {message}"
             )
-        else:
-            await self._log(f"Sandbox {self.name} deleted")
+
+            raise RuntimeError(
+                f"Failed to delete sandbox {self.name}: {message}"
+            )
+
+        await self._log(f"Sandbox {self.name} deleted")
 
     async def _celesto(
         self,
@@ -203,6 +260,7 @@ class Sandbox:
         _retry: int = 0,
     ) -> tuple[str, str, int]:
         executable = shutil.which("celesto")
+
         if not executable:
             raise RuntimeError(
                 "Celesto CLI not found. Activate the Ubuntu "
@@ -210,8 +268,10 @@ class Sandbox:
             )
 
         proc_env = os.environ.copy()
+
         if CELESTO_API_KEY:
             proc_env["CELESTO_API_KEY"] = CELESTO_API_KEY
+
         if env:
             proc_env.update(env)
 
@@ -223,15 +283,25 @@ class Sandbox:
                 stderr=asyncio.subprocess.PIPE,
                 env=proc_env,
             )
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=timeout,
-            )
+
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(),
+                    timeout=timeout,
+                )
+            except asyncio.TimeoutError:
+                # Prevent the local Celesto CLI subprocess from being
+                # left running after its timeout.
+                proc.kill()
+                await proc.communicate()
+                raise
+
             return (
                 stdout.decode(errors="replace"),
                 stderr.decode(errors="replace"),
                 proc.returncode,
             )
+
         except (asyncio.TimeoutError, OSError) as exc:
             if _retry < DEFAULT_RETRIES:
                 await self._log(
@@ -257,22 +327,23 @@ def _extract_computer_id(output: str) -> str | None:
     """Extract a cloud computer ID from common CLI output formats."""
     import re
 
-    # Known cloud IDs look like cmp_ followed by an identifier.
     match = re.search(r"\bcmp_[A-Za-z0-9_-]+\b", output)
+
     if match:
         return match.group(0)
 
-    # Do not treat arbitrary success text as a computer ID.
     return None
 
 
 def _truncate_lines(text: str, max_lines: int) -> str:
     lines = [line[:2000] for line in text.splitlines()]
+
     if len(lines) > max_lines:
         lines = (
             [f"[...truncated {len(lines) - max_lines} lines...]"]
             + lines[-max_lines:]
         )
+
     return "\n".join(lines)
 
 

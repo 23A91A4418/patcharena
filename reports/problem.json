@@ -1,0 +1,6 @@
+{
+    "who": "Software engineering teams and open-source maintainers who receive bug reports and need multiple AI-generated patch strategies evaluated objectively before merging any fix.",
+    "agent_work": "The agent clones the target repository inside an isolated Celesto sandbox, applies one of four patch strategies, runs the project test suite, starts the app for preview, and captures a screenshot as verification evidence.",
+    "proof_output": "A ranked leaderboard of candidate patches with test pass/fail counts, diff sizes, preview URLs, and a deterministic judge score for each strategy.",
+    "idea_source": "idea_bank"
+}

@@ -1,0 +1,14 @@
+{
+    "capabilities": [
+        {
+            "id": "network_policy",
+            "why": "Each candidate sandbox runs with a restricted network policy that blocks arbitrary outbound traffic. This is essential to the containment test: a prompt-injected instruction to exfiltrate an environment variable via curl is silently dropped at the hypervisor layer, never reaching the host or the internet. Without this primitive, a misbehaving agent producing a malicious shell command would have unrestricted internet access and could exfiltrate secrets or phone home to an attacker-controlled endpoint.",
+            "evidence_path": "reports/evidence/containment.log"
+        },
+        {
+            "id": "safety_hooks",
+            "why": "A pre-execution safety hook inspects every shell command before it reaches the guest VM. The hook appends an audit record to logs/commands.jsonl with the timestamp, sandbox name, command text, and the allow-or-block decision. Commands matching a forbidden pattern (writing to /etc, reading /proc/*/environ, curl with suspicious URLs) produce a block decision that is still recorded. This gives a tamper-evident audit trail that proves every action happened inside a Celesto sandbox and not on the host machine, which is a requirement of the challenge spec.",
+            "evidence_path": "logs/commands.jsonl"
+        }
+    ]
+}

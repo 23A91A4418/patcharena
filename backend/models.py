@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import re
+
+_SANDBOX_RE = re.compile(r"^sbx-[a-z0-9]{8,}$")
 
 
 class CandidateStatus(str, Enum):
@@ -123,3 +126,24 @@ class RunRequest(BaseModel):
 
 class PRRequest(BaseModel):
     run_id: str
+
+
+# ---------------------------------------------------------------------------
+# Ledger API models (compliance: GET /api/runs, POST /api/runs)
+# ---------------------------------------------------------------------------
+
+class LedgerRunRequest(BaseModel):
+    run_id: str
+    sandbox_name: str
+    problem_id: str
+    state: Literal["created", "ready", "running", "succeeded", "failed", "deleted"]
+    execution_target: Literal["celesto_sandbox"]
+
+    @field_validator("sandbox_name")
+    @classmethod
+    def _check_sandbox_name(cls, v: str) -> str:
+        if not _SANDBOX_RE.match(v):
+            raise ValueError(
+                f"sandbox_name must match sbx-[a-z0-9]{{8,}}, got {v!r}"
+            )
+        return v
