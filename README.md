@@ -293,16 +293,6 @@ The configured replay mode demonstrates the dashboard and saved event flow. It d
 | `reports/concurrency.json` | Recorded concurrency test report |
 | `logs/commands.jsonl` | Command audit log |
 
-## Demo video
-
-**Status: pending recording.**
-
-The walkthrough video will demonstrate the dashboard, candidate leaderboard, Celesto integration, evaluation reports, and current verification limitations.
-
-Target duration: under 3 minutes.
-
-Once recorded, save the video as `demo/walkthrough.mp4` or add a direct video link here.
-
 ## Current limitations
 
 - Live sandbox execution depends on Celesto credentials, LLM API access, and account limits.
