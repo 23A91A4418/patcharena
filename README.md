@@ -234,3 +234,28 @@ open http://localhost:8080
 - The free Celesto trial limits to one retained sandbox; use local runtime or a paid top-up for concurrency.
 - Replay mode demonstrates event streaming from saved data; it does not prove fresh sandbox execution.
 - GitHub PR creation requires a valid token and repository permissions.
+
+## Eval report
+
+The repository contains a 20-run reliability report in
+`reports/reliability.json`. The recorded results show an 85% success rate,
+a median wall-clock time of 74.55 seconds, a p90 wall-clock time of
+103.1 seconds, a median boot-to-ready time of 26.15 seconds, and a
+reported total cost of $0.098.
+
+These figures describe the recorded report data; the complete 20-run
+evaluation has not been independently reproduced during the separate live
+cloud verification. The local automated test suite passed 53 tests, with
+2 tests skipped. See `reports/postmortem.md` for the recorded failure analysis.
+
+## Containment test
+
+The project records a containment test in `reports/containment.json` and
+`reports/evidence/containment.log`. A separate manual live cloud check is
+documented in `reports/live_verification.json`.
+
+During that live check, outbound HTTPS to example.com returned HTTP 200.
+Therefore, strict outbound network blocking and host filesystem isolation
+remain unverified. The recorded `blocked` and `host_untouched` fields should
+not be interpreted as independently verified guarantees. Further live
+testing is required to establish containment behavior.

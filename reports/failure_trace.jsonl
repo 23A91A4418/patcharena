@@ -71,3 +71,13 @@
 {"ts": "2026-10-24T09:45:53.304459+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
 {"ts": "2026-10-24T09:45:53.328292+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
 {"ts": "2026-10-24T09:45:53.360007+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
+{"ts": "2026-10-24T09:52:43.714120+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:52:43.731765+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:52:43.752625+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:52:43.778475+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cleanup"}
+{"ts": "2026-10-24T09:52:43.803629+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cleanup", "result": "deleted"}
+{"ts": "2026-10-24T09:52:43.834048+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:52:43.849086+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 1, "total_steps": 10, "event": "sandbox_created", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:52:43.871512+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 2, "total_steps": 10, "event": "step_started"}
+{"ts": "2026-10-24T09:52:43.895333+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_started", "sandbox_name": "cmp-test-cancel"}
+{"ts": "2026-10-24T09:52:43.918422+00:00", "run_id": "test-run-001", "candidate_id": "minimal", "step": 10, "total_steps": 10, "event": "cleanup_completed", "sandbox_name": "cmp-test-cancel", "result": "deleted"}
